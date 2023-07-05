@@ -46,8 +46,8 @@ void scheduler_SRTN(Buffer* buffer){
     Process aux;
     int next;
 
-    for (int i = (buffer->current+1%)9; i!= buffer.final;i++){
-        if(i = (buffer->current+1%)9){
+    for (int i = buffer->current+1; (i%9)!= buffer.final;i++){
+        if(i = (buffer->current+1)%9){
             next=i;
         }else{
             if((buffer->processes[i].time_left < buffer->processes[next].time_left)||
@@ -67,8 +67,8 @@ void scheduler_SPN(Buffer* buffer){
     Process aux;
     int next;
 
-    for (int i = (buffer->current+1%)9; i!= buffer->final;i++){
-        if(i = (buffer->current+1%)9){
+    for (int i = buffer->current+1; (i%9)!= buffer.final;i++){
+        if(i = (buffer->current+1)%9){
             next=i;
         }else{
             if((buffer->processes[i].size < buffer->processes[next].size)||
