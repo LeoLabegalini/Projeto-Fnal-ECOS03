@@ -2,12 +2,13 @@
 #include <conio.h>
 #define MAX_SIZE 5
 
-/*definicao do tipo processo:
+/*Definicao do tipo processo:
  - tempo em que foi criado/requisitado
  - tempo necessario para ser concluido
  - prioridade
 */ 
 typedef struct{
+    int id;
     int requested; 
     int time_left; 
     int priority; 
@@ -15,66 +16,83 @@ typedef struct{
 
 /*Estrutura do Buffer circular:
  - vetor a ser utilizado de forma circular
- - varivel de controle para indicacao do processo atual
+ - varivel de controle para indicacao do primeiro processo no buffer
  - variavel de controle para indicacao do ultimo processo no buffer
  - ponteiro que retem o escalonador utilizado para aquele buffer
 */
-typedef struct {
-    Process buffer[MAX_SIZE];
-    int current_process;
-    int final_process;
-    void (*scheduler)(void);
+typedef struct no{
+    Process processes[MAX_SIZE];
+    int current;
+    int final;
+    void (*scheduler)(struct no*);
 }Buffer;
 
-/*estrutura de controle do quantum:
+/*Estrutura de controle do quantum:
  - contador
  - tamanho maximo de quantum a ser utilizado por um processo
 */ 
 typedef struct{
     int count;
     int quantum_size;
-}clock_tick;
+}Clock_tick;
 
-typedef void (*ptrFunc)(void);
+//Clock_tick tick;
 
-// escalonador Shortest Remaining-Time Next
-void scheduler_SRTN(){}
+typedef void (*ptrFunc)(Buffer*);
 
-// escalonador Shortest Process Next
-void scheduler_SPN(){}
+// Escalonador Shortest Remaining-Time Next
+void scheduler_SRTN(Buffer* buffer){}
 
-void init_Buffer(ptrFunc func){}
+// Escalonador Shortest Process Next
+void scheduler_SPN(Buffer* buffer){}
 
-void add_process(Buffer* b, int request, int time, int priority){
-    if((b->final_process+1) % MAX_SIZE != b->current_process){
-        Process p = {request, time, priority};
-        b->buffer[b->final_process] = p;
-        b->final_process = (b->final_process+1) % MAX_SIZE;
-    }
+void init_Buffer(Buffer* buffer, ptrFunc type_scheduler){
+    buffer->current = 0;
+    buffer->final = 0;
+    buffer->scheduler = type_scheduler;
 }
 
-// retira os dados do arquivo de entrada stdin.txt preenchendo primeiro o buffer b1 e em seguida o buffer b2 
+// void init_clock_tick(int size){
+//     tick.count = 0;
+//     tick.quantum_size = size;
+// }
+
+int add_process(Buffer* b, int id, int request, int time, int priority){
+    if((b->final+1) % MAX_SIZE != b->current){
+        return 0;
+    }
+
+    Process p = {id, request, time, priority};
+    b->processes[b->final] = p;
+    b->final = (b->final+1) % MAX_SIZE;
+    return 1;
+}
+
+// Retira os dados do arquivo de entrada stdin.txt preenchendo primeiro o buffer b1 e em seguida o buffer b2 
 void get_dados(Buffer* b1, Buffer* b2){
     FILE* arq;
-    int request, time, priority;
-
+    int request, time, priority, i;
+    
     arq = fopen("stdin.txt","r");
-
     if(arq == NULL){
         printf("Erro na leitura do arquivo ou arquivo vazio");
         fclose(arq);
         return;
     }
     
-    while((fscanf(arq, "%d%d%d", &request, &time, &priority)!=-1) && b1->final_process<MAX_SIZE){
-        add_process(b1,request,time,priority);
-        
+    i=0;
+    while((fscanf(arq, "%d%d%d", &request, &time, &priority)!=-1) && b1->final<MAX_SIZE){
+        if(add_process(i++, b1,request,time,priority) == 0){
+            break;
+        }
     }
 
-    while((fscanf(arq, "%d %d %d", &request, &time, &priority)!=-1) && b2->final_process<MAX_SIZE){
-        add_process(b2,request,time,priority);
+    while((fscanf(arq, "%d %d %d", &request, &time, &priority)!=-1) && b2->final<MAX_SIZE){
+        if(add_process(i++, b2,request,time,priority) == 0){
+            break;
+        }
     }
-
+    printf("\nOs %d primeiros processos foram adicionados aos buffers", i);
     fclose(arq);
 }
 
