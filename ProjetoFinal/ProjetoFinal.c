@@ -64,6 +64,16 @@ void generic_scheduler(Buffer* buffer){
     buffer->process[next]=next;
 }
 
+Process* remove_process(Buffer* b){
+    if(buffer->current==buffer->final){
+        return NULL;
+    }
+
+    int aux = buffer->current;
+    buffer->current = (buffer->current+1) % MAX_SIZE;
+    return buffer->process[aux];
+}
+
 // Escalonador Shortest Remaining-Time Next
 void scheduler_SRTN(Buffer* buffer){
     //...
