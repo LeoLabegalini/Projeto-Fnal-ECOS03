@@ -133,3 +133,37 @@ void get_dados(Buffer* b1, Buffer* b2){
 void main (){
     
 }
+
+void kernel(Buffer buffer, Process process[], Clock_tick clock){
+    int i;
+
+    //Adiciona processos no buffer
+    while(1){
+        for(i=0;i<20;i++){
+            if(process[i].requested==count)
+        add_process(process[i]);
+    }
+    //Avança tempo
+    clock.cout++;
+    buffer[current].time_left--;
+    clock.quantum_size--;
+
+    //Processo acababou
+    if(time_left==0){
+        buffer.current=(buffer.current+1) %9;
+        clock.quantum_size=QUANTUM;
+    }else{
+        //Quantum estourou
+        if(quantum==0){
+            add_process(buffer.processes[buffer.current]);
+            buffer.current=(buffer.current+1) %9;
+        }
+    }
+    //Escreve processo atual
+    printi" t"=count "process" = buffer.current
+
+    //Finaliza Kernel
+    if(fila==NULL  and current==final)
+        return;
+    }
+}
