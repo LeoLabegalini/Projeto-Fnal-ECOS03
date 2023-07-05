@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <conio.h>
-#define MAX_SIZE 5
+#define MAX_SIZE 10
 
 /*Definicao do tipo processo:
  - tempo em que foi criado/requisitado
@@ -61,12 +61,14 @@ int add_process(Buffer* b, int id, int request, int time, int priority){
     if((b->final+1) % MAX_SIZE != b->current){
         return 0;
     }
-
+    Process* p;
+    p = malloc(sizeof(*Process));
     Process p = {id, request, time, priority};
-    b->processes[b->final] = p;
+    b->processes[b->final] = *p;
     b->final = (b->final+1) % MAX_SIZE;
     return 1;
 }
+
 
 // Retira os dados do arquivo de entrada stdin.txt preenchendo primeiro o buffer b1 e em seguida o buffer b2 
 void get_dados(Buffer* b1, Buffer* b2){
