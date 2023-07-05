@@ -10,7 +10,6 @@
 typedef struct{
     int id;
     int requested; 
-    int size;
     int time_left; 
     int priority; 
 }Process;
@@ -59,32 +58,32 @@ void generic_scheduler(Buffer* buffer){
         i = (i+1)%MAX_SIZE;
     }
 
-    aux=buffer->process[(current+1)%9];
-    buffer->process[(current+1)%9]=buffer->process[next];
-    buffer->process[next]=next;
+    aux=buffer->processes[(buffer->current+1)%9];
+    buffer->processes[(buffer->current+1)%9]=buffer->processes[next];
+    buffer->processes[next]=aux;
 }
 
-Process* remove_process(Buffer* b){
+Process* remove_process(Buffer* buffer){
     if(buffer->current==buffer->final){
         return NULL;
     }
 
     int aux = buffer->current;
     buffer->current = (buffer->current+1) % MAX_SIZE;
-    return buffer->process[aux];
+    return &buffer->processes[aux];
 }
 
 // Escalonador Shortest Remaining-Time Next
 void scheduler_SRTN(Buffer* buffer){
     //...
-    generic_scheduler();
+    generic_scheduler(buffer);
     //...
 }
 
 // Escalonador Shortest Process Next
 void scheduler_SPN(Buffer* buffer){
     //...
-    generic_scheduler();
+    generic_scheduler(buffer);
     //...
 }
 
@@ -99,47 +98,40 @@ void init_Buffer(Buffer* buffer, ptrFunc type_scheduler){
 //     tick.quantum_size = size;
 // }
 
-int add_process(Buffer* b, int id, int request, int time, int priority){
+int add_process(Buffer* b, Process processo){
     if((b->final+1) % MAX_SIZE != b->current){
         return 0;
     }
-    Process* p;
-    p = malloc(sizeof(*Process));
-    Process p = {id, request, time, time, priority};
-    b->processes[b->final] = *p;
+
+    b->processes[b->final] = processo;
     b->final = (b->final+1) % MAX_SIZE;
     return 1;
 }
 
-
-// Retira os dados do arquivo de entrada stdin.txt preenchendo primeiro o buffer b1 e em seguida o buffer b2 
-void get_dados(Buffer* b1, Buffer* b2){
+// Retira os dados do arquivo de entrada stdin.txt salvando-os na fila  
+void get_dados(Process* queue, int size){
     FILE* arq;
     int request, time, priority, i;
     
     arq = fopen("stdin.txt","r");
     if(arq == NULL){
-        printf("Erro na leitura do arquivo ou arquivo vazio");
+        printf("\nErro na leitura do arquivo\nVerifique se o arquivo está vazio ou na mesma pasta que o código fonte");
         fclose(arq);
         return;
     }
     
     i=0;
-    while((fscanf(arq, "%d%d%d", &request, &time, &priority)!=-1) && b1->final<MAX_SIZE){
-        if(add_process(i++, b1,request,time,priority) == 0){
-            break;
-        }
+    while((fscanf(arq, "%d%d%d", &request, &time, &priority)!=-1) && i<size){
+        queue[i].id = i;
+        queue[i].requested = request;
+        queue[i].time_left = time;
+        queue[i].priority = priority;
+        i++;
     }
-
-    while((fscanf(arq, "%d %d %d", &request, &time, &priority)!=-1) && b2->final<MAX_SIZE){
-        if(add_process(i++, b2,request,time,priority) == 0){
-            break;
-        }
-    }
-    printf("\nOs %d primeiros processos foram adicionados aos buffers", i);
+    printf("\n%d processos foram adicionados.", i);
     fclose(arq);
 }
 
 void main (){
-    
+    return;
 }
