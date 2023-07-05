@@ -10,6 +10,7 @@
 typedef struct{
     int id;
     int requested; 
+    int size;
     int time_left; 
     int priority; 
 }Process;
@@ -41,10 +42,46 @@ typedef struct{
 typedef void (*ptrFunc)(Buffer*);
 
 // Escalonador Shortest Remaining-Time Next
-void scheduler_SRTN(Buffer* buffer){}
+void scheduler_SRTN(Buffer* buffer){
+    Process aux;
+    int next;
+
+    for (int i = (buffer.current+1%)9; i!= buffer.final;i++){
+        if(i = (buffer.current+1%)9){
+            next=i;
+        }else{
+            if((buffer.processes[i]->time_left < buffer.processes[next]->time_left)||
+              ((buffer.processes[i]->time_left == buffer.processes[next]->time_left) &&
+               (buffer.processes[i]->priority > buffer.processes[next]->priority))){
+                next=i;
+            }
+        }
+    }
+    aux=buffer.process[(current+1)%9];
+    buffer->process[(current+1)%9]=buffer->process[next];
+    buffer->process[next]=next;
+}
 
 // Escalonador Shortest Process Next
-void scheduler_SPN(Buffer* buffer){}
+void scheduler_SPN(Buffer* buffer){
+    Process aux;
+    int next;
+
+    for (int i = (buffer->current+1%)9; i!= buffer->final;i++){
+        if(i = (buffer.current+1%)9){
+            next=i;
+        }else{
+            if((buffer.processes[i]->size < buffer.processes[next]->size)||
+              ((buffer.processes[i]->size == buffer.processes[next]->size) &&
+               (buffer.processes[i]->priority > buffer.processes[next]->priority))){
+                next=i;
+            }
+        }
+    }
+    aux=buffer.process[(current+1)%9];
+    buffer->process[(current+1)%9]=buffer->process[next];
+    buffer->process[next]=next;
+}
 
 void init_Buffer(Buffer* buffer, ptrFunc type_scheduler){
     buffer->current = 0;
@@ -63,7 +100,7 @@ int add_process(Buffer* b, int id, int request, int time, int priority){
     }
     Process* p;
     p = malloc(sizeof(*Process));
-    Process p = {id, request, time, priority};
+    Process p = {id, request, time, time, priority};
     b->processes[b->final] = *p;
     b->final = (b->final+1) % MAX_SIZE;
     return 1;
