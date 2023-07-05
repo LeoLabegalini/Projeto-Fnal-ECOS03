@@ -46,18 +46,18 @@ void scheduler_SRTN(Buffer* buffer){
     Process aux;
     int next;
 
-    for (int i = (buffer.current+1%)9; i!= buffer.final;i++){
-        if(i = (buffer.current+1%)9){
+    for (int i = (buffer->current+1%)9; i!= buffer.final;i++){
+        if(i = (buffer->current+1%)9){
             next=i;
         }else{
-            if((buffer.processes[i]->time_left < buffer.processes[next]->time_left)||
-              ((buffer.processes[i]->time_left == buffer.processes[next]->time_left) &&
-               (buffer.processes[i]->priority > buffer.processes[next]->priority))){
+            if((buffer->processes[i].time_left < buffer->processes[next].time_left)||
+              ((buffer->processes[i].time_left == buffer->processes[next].time_left) &&
+               (buffer->processes[i].priority > buffer->processes[next].priority))){
                 next=i;
             }
         }
     }
-    aux=buffer.process[(current+1)%9];
+    aux=buffer->process[(current+1)%9];
     buffer->process[(current+1)%9]=buffer->process[next];
     buffer->process[next]=next;
 }
@@ -68,17 +68,17 @@ void scheduler_SPN(Buffer* buffer){
     int next;
 
     for (int i = (buffer->current+1%)9; i!= buffer->final;i++){
-        if(i = (buffer.current+1%)9){
+        if(i = (buffer->current+1%)9){
             next=i;
         }else{
-            if((buffer.processes[i]->size < buffer.processes[next]->size)||
-              ((buffer.processes[i]->size == buffer.processes[next]->size) &&
-               (buffer.processes[i]->priority > buffer.processes[next]->priority))){
+            if((buffer->processes[i].size < buffer->processes[next].size)||
+              ((buffer->processes[i].size == buffer->processes[next].size) &&
+               (buffer->processes[i].priority > buffer->processes[next].priority))){
                 next=i;
             }
         }
     }
-    aux=buffer.process[(current+1)%9];
+    aux=buffer->process[(current+1)%9];
     buffer->process[(current+1)%9]=buffer->process[next];
     buffer->process[next]=next;
 }
