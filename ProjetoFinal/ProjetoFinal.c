@@ -41,46 +41,41 @@ typedef struct{
 
 typedef void (*ptrFunc)(Buffer*);
 
-// Escalonador Shortest Remaining-Time Next
-void scheduler_SRTN(Buffer* buffer){
-    Process aux;
-    int next;
-
-    for (int i = buffer->current+1; (i%9)!= buffer.final;i++){
-        if(i = (buffer->current+1)%9){
-            next=i;
-        }else{
-            if((buffer->processes[i].time_left < buffer->processes[next].time_left)||
-              ((buffer->processes[i].time_left == buffer->processes[next].time_left) &&
-               (buffer->processes[i].priority > buffer->processes[next].priority))){
-                next=i;
-            }
-        }
+void generic_scheduler(Buffer* buffer){
+    if(buffer->current==buffer->final){
+        return;
     }
+
+    Process aux;
+    int next = (buffer->current+1)%MAX_SIZE;
+    int i = (next+1)%MAX_SIZE;
+
+    while(i != buffer->final){
+        if((buffer->processes[i].time_left < buffer->processes[next].time_left)||
+            ((buffer->processes[i].time_left == buffer->processes[next].time_left) &&
+            (buffer->processes[i].priority > buffer->processes[next].priority))){
+            next=i;
+        }
+        i = (i+1)%MAX_SIZE;
+    }
+
     aux=buffer->process[(current+1)%9];
     buffer->process[(current+1)%9]=buffer->process[next];
     buffer->process[next]=next;
 }
 
+// Escalonador Shortest Remaining-Time Next
+void scheduler_SRTN(Buffer* buffer){
+    //...
+    generic_scheduler();
+    //...
+}
+
 // Escalonador Shortest Process Next
 void scheduler_SPN(Buffer* buffer){
-    Process aux;
-    int next;
-
-    for (int i = buffer->current+1; (i%9)!= buffer.final;i++){
-        if(i = (buffer->current+1)%9){
-            next=i;
-        }else{
-            if((buffer->processes[i].size < buffer->processes[next].size)||
-              ((buffer->processes[i].size == buffer->processes[next].size) &&
-               (buffer->processes[i].priority > buffer->processes[next].priority))){
-                next=i;
-            }
-        }
-    }
-    aux=buffer->process[(current+1)%9];
-    buffer->process[(current+1)%9]=buffer->process[next];
-    buffer->process[next]=next;
+    //...
+    generic_scheduler();
+    //...
 }
 
 void init_Buffer(Buffer* buffer, ptrFunc type_scheduler){
