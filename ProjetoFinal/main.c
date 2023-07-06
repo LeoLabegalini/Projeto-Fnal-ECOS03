@@ -5,10 +5,10 @@
 void main (){
     Buffer b;
     Process fila[MAX_PROCESS];
+    int op=0;
 
     get_dados(fila,"stdin.txt");
     init_clock_tick();
-    int op=0;
 
     while((op!=1)&&(op!=2)){
         printf("\nSelecione o escalonador:\n");
