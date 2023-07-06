@@ -120,17 +120,17 @@ void init_Buffer(Buffer* buffer, ptrFunc type_scheduler){
     buffer->scheduler = type_scheduler;
 }
 
-void init_clock_tick(int size){
+void init_clock_tick(){
     clock.count = 0;
     clock.quantum_size = QUANTUM;
 }
 
 // Retira os dados do arquivo de entrada stdin.txt salvando-os na fila  
-void get_dados(Process* queue){
+void get_dados(Process* queue, char* file_name){
     FILE* arq;
     int request, time, priority, i;
     
-    arq = fopen("stdin.txt","r");
+    arq = fopen(file_name,"r");
     if(arq == NULL){
         printf("\nErro na leitura do arquivo\nVerifique se o arquivo está vazio ou na mesma pasta que o código fonte");
         fclose(arq);
@@ -149,21 +149,37 @@ void get_dados(Process* queue){
     fclose(arq);
 }
 
-void kernel(Buffer* buffer, Process* queue){
+void print_status(FILE* file, Buffer* buffer){
+    fprintf(file,"\n================================================================================\n");
+    fprintf(file,"Timing: %d \t Current process: P%d\n", clock.count, buffer->processes[buffer->current].id);
+    fprintf(file,"\n-------------------------------------------------------------------------------\n");
+    fprintf(file,"Waiting processes: ");
+    for(int i=(buffer->current+1)%MAX_SIZE;i!=buffer->final;i=(i+1)%MAX_SIZE){
+        fprintf(file,"P%d ", buffer->processes[i].id);
+    }
+    fprintf(file,"\n================================================================================\n");
+
+}
+
+void kernel(Buffer* buffer, Process* queue, char* file_name){
     int i;
+    int count_process=0;
     ptrFunc foo = buffer->scheduler;
+    FILE* arq;
+
+    arq = fopen(file_name,"a");
     //Adiciona processos no buffer
     while(1){
         for(i=0;i<MAX_PROCESS;i++){
             if(queue[i].requested==clock.count){
                 add_process(buffer, queue[i]);
+                count_process++;
             }
         }
 
         foo(buffer); // Agendamento
         
-        //Escreve processo atual
-        //printi" t"=count "process" = buffer.current
+        print_status(arq, buffer);
 
         //Avança tempo
         clock.count++;
@@ -171,7 +187,8 @@ void kernel(Buffer* buffer, Process* queue){
         clock.quantum_size--;
 
         //Finaliza Kernel
-        if(queue==NULL && buffer->current==buffer->final)
+        if(count_process==MAX_PROCESS && buffer->current==buffer->final)
+            fclose(arq);
             return;
     }
 }
