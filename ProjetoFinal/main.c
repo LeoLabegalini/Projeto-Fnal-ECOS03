@@ -6,14 +6,33 @@ void main (){
     Buffer b;
     Process fila[MAX_PROCESS];
 
-    init_Buffer(&b,scheduler_SPN);
     get_dados(fila,"stdin.txt");
     init_clock_tick();
     int c=0;
+    int op=0;
     for(int i=0;i<MAX_PROCESS;i++){
         c+=fila[i].time_left;
     }
+
     printf("\n\nTempo necessario: %d\n",c);
+
+    while((op!=1)&&(op!=2)){
+        printf("\nSelecione o escalonador:\n");
+        printf("\n1-SRTN   2-STN\n");
+        scanf("%d", &op);
+
+        switch(op){
+            case 1:
+                init_Buffer(&b,scheduler_SRTN);
+                break;
+            case 2:
+                init_Buffer(&b,scheduler_SPN);
+                break;
+            default:
+                printf("\nOpcao invalida\n.");
+                break;
+        }
+    }
     kernel(&b,fila,"stdout.txt");
     return;
 }
