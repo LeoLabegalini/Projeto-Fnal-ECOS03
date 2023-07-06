@@ -105,23 +105,24 @@ void get_dados(Process* queue, char* file_name){
         queue[i].priority = priority;
         i++;
     }
-    printf("\n%d processos foram adicionados.", i);
+    printf("\n%d processos foram lidos.", i);
     fclose(arq);
 }
 
 void print_status(FILE* file, Buffer* buffer){
     if(buffer->current==buffer->last){
+        fprintf(file,"Timing: %d \t[Process buffer is empty]", clock.count);
+        fprintf(file,"\n-------------------------------------------------------------------------------\n");
         return;
     }
 
-    fprintf(file,"\n================================================================================\n");
-    fprintf(file,"Timing: %d \t Current process: P%d", clock.count, buffer->processes[buffer->current].id);
-    fprintf(file,"\n-------------------------------------------------------------------------------\n");
-    fprintf(file,"Waiting processes: ");
+    fprintf(file,"Timing: %d \t Current process: P%d \t ", clock.count, buffer->processes[buffer->current].id);
+    fprintf(file, "Time left: %d", buffer->processes[buffer->current].time_left);
+    fprintf(file,"\nUnbuffered waiting processes: ");
     for(int i=(buffer->current+1)%MAX_SIZE;i!=buffer->last;i=(i+1)%MAX_SIZE){
         fprintf(file,"P%d ", buffer->processes[i].id);
     }
-    fprintf(file,"\n================================================================================\n");
+    fprintf(file,"\n-------------------------------------------------------------------------------\n");
 
 }
 
@@ -175,7 +176,7 @@ void kernel(Buffer* buffer, Process* queue, char* file_name){
 
         //Finaliza Kernel
         if( !(count_process) && buffer->current==buffer->last){
-            printf("Processos que foram ao buffer: %d", MAX_PROCESS-count_process);
+            printf("Operacao finalizada! \nQuantidade de processos que foram ao buffer: %d", MAX_PROCESS-count_process);
             fclose(arq);
             return;
         }

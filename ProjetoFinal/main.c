@@ -6,7 +6,7 @@ void main (){
     Buffer b;
     Process fila[MAX_PROCESS];
 
-    init_Buffer(&b,scheduler_SRTN);
+    init_Buffer(&b,scheduler_SPN);
     get_dados(fila,"stdin.txt");
     init_clock_tick();
     int c=0;
