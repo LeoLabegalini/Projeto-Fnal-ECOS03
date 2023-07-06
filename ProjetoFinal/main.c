@@ -12,7 +12,7 @@ void main (){
 
     while((op!=1)&&(op!=2)){
         printf("\nSelecione o escalonador:\n");
-        printf("\n1-SRTN   2-STN\n");
+        printf("\n1-SRTN   2-SPN\n");
         scanf("%d", &op);
 
         switch(op){

@@ -62,6 +62,7 @@ void scheduler_SRTN(Buffer* buffer){
         if(aux>-1){
             generic_scheduler(buffer);
             add_process(buffer, buffer->processes[aux]);
+            clock.quantum_size=QUANTUM;
         }
     }
 }
@@ -126,7 +127,7 @@ void print_status(FILE* file, Buffer* buffer){
 
 }
 
-// Metodo de ordenacao Selection Sort para ordenar a fila
+// Metodo de ordenacao (Selection Sort) que ordena pelo tempo de requisição
 void stSort(Process* queue){
     int i, j, minIndex;
     Process temp;
@@ -153,7 +154,9 @@ void kernel(Buffer* buffer, Process* queue, char* file_name){
     ptrFunc foo = buffer->scheduler;
     FILE* arq = fopen(file_name,"w");
     
-    stSort(queue);
+    // a fila deve estar ordenada para que os processos sejam adicionados ao
+    // buffer de maneira correta
+    stSort(queue); 
 
     while(1){
         i = last_process;
@@ -176,7 +179,7 @@ void kernel(Buffer* buffer, Process* queue, char* file_name){
 
         //Finaliza Kernel
         if( !(count_process) && buffer->current==buffer->last){
-            printf("Operacao finalizada! \nQuantidade de processos que foram ao buffer: %d", MAX_PROCESS-count_process);
+            printf("\nOperacao finalizada! \nQuantidade de processos que foram ao buffer: %d", MAX_PROCESS-count_process);
             fclose(arq);
             return;
         }

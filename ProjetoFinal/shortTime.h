@@ -3,7 +3,7 @@
     
     #define MAX_SIZE 10
     #define MAX_PROCESS 20
-    #define QUANTUM 5
+    #define QUANTUM 3
 
     /*Definicao do tipo processo:
     - tempo em que foi criado/requisitado
