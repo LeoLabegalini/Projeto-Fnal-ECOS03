@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <conio.h>
+
 #define MAX_SIZE 10
+#define MAX_PROCESS 20
+#define QUANTUM 5
 
 /*Definicao do tipo processo:
  - tempo em que foi criado/requisitado
@@ -36,7 +39,7 @@ typedef struct{
     int quantum_size;
 }Clock_tick;
 
-//Clock_tick tick;
+Clock_tick clock;
 
 typedef void (*ptrFunc)(Buffer*);
 
@@ -46,7 +49,7 @@ void generic_scheduler(Buffer* buffer){
     }
 
     Process aux;
-    int next = (buffer->current+1)%MAX_SIZE;
+    int next = buffer->current;
     int i = (next+1)%MAX_SIZE;
 
     while(i != buffer->final){
@@ -63,21 +66,44 @@ void generic_scheduler(Buffer* buffer){
     buffer->processes[next]=aux;
 }
 
-Process* remove_process(Buffer* buffer){
+int add_process(Buffer* b, Process processo){
+    if((b->final+1) % MAX_SIZE != b->current){
+        return 0;
+    }
+
+    b->processes[b->final] = processo;
+    b->final = (b->final+1) % MAX_SIZE;
+    return 1;
+}
+
+int remove_process(Buffer* buffer){
     if(buffer->current==buffer->final){
-        return NULL;
+        return -1;
     }
 
     int aux = buffer->current;
     buffer->current = (buffer->current+1) % MAX_SIZE;
-    return &buffer->processes[aux];
+    return aux;
 }
 
 // Escalonador Shortest Remaining-Time Next
 void scheduler_SRTN(Buffer* buffer){
-    //...
-    generic_scheduler(buffer);
-    //...
+    if(buffer->current==buffer->final){
+        return;
+    }
+    //Processo acababou
+    if(buffer->processes[buffer->current].time_left==0){
+        buffer->current=(buffer->current+1) %9;
+        clock.quantum_size=QUANTUM;
+    }else{
+        //Quantum estourou
+        if(clock.quantum_size==0){
+            int aux;
+            aux = remove_process(buffer);
+            generic_scheduler(buffer);
+            add_process(buffer, buffer->processes[aux]);
+        }
+    }
 }
 
 // Escalonador Shortest Process Next
@@ -93,23 +119,13 @@ void init_Buffer(Buffer* buffer, ptrFunc type_scheduler){
     buffer->scheduler = type_scheduler;
 }
 
-// void init_clock_tick(int size){
-//     tick.count = 0;
-//     tick.quantum_size = size;
-// }
-
-int add_process(Buffer* b, Process processo){
-    if((b->final+1) % MAX_SIZE != b->current){
-        return 0;
-    }
-
-    b->processes[b->final] = processo;
-    b->final = (b->final+1) % MAX_SIZE;
-    return 1;
+void init_clock_tick(int size){
+    clock.count = 0;
+    clock.quantum_size = QUANTUM;
 }
 
 // Retira os dados do arquivo de entrada stdin.txt salvando-os na fila  
-void get_dados(Process* queue, int size){
+void get_dados(Process* queue){
     FILE* arq;
     int request, time, priority, i;
     
@@ -121,7 +137,7 @@ void get_dados(Process* queue, int size){
     }
     
     i=0;
-    while((fscanf(arq, "%d%d%d", &request, &time, &priority)!=-1) && i<size){
+    while((fscanf(arq, "%d%d%d", &request, &time, &priority)!=-1) && i<MAX_PROCESS){
         queue[i].id = i;
         queue[i].requested = request;
         queue[i].time_left = time;
@@ -136,36 +152,28 @@ void main (){
     return;
 }
 
-void kernel(Buffer buffer, Process process[], Clock_tick clock){
+void kernel(Buffer* buffer, Process* queue){
     int i;
-
+    ptrFunc foo = buffer->scheduler;
     //Adiciona processos no buffer
     while(1){
-        for(i=0;i<20;i++){
-            if(process[i].requested==count)
-        add_process(process[i]);
-    }
-    //Avança tempo
-    clock.cout++;
-    buffer[current].time_left--;
-    clock.quantum_size--;
-
-    //Processo acababou
-    if(time_left==0){
-        buffer.current=(buffer.current+1) %9;
-        clock.quantum_size=QUANTUM;
-    }else{
-        //Quantum estourou
-        if(quantum==0){
-            add_process(buffer.processes[buffer.current]);
-            buffer.current=(buffer.current+1) %9;
+        for(i=0;i<MAX_PROCESS;i++){
+            if(queue[i].requested==clock.count)
+                add_process(buffer, queue[i]);
         }
-    }
-    //Escreve processo atual
-    printi" t"=count "process" = buffer.current
 
-    //Finaliza Kernel
-    if(fila==NULL  and current==final)
-        return;
+        foo(buffer);
+        
+        //Escreve processo atual
+        //printi" t"=count "process" = buffer.current
+
+        //Avança tempo
+        clock.count++;
+        buffer->processes[buffer->current].time_left--;
+        clock.quantum_size--;
+
+        //Finaliza Kernel
+        if(queue==NULL && buffer->current==buffer->final)
+            return;
     }
 }
