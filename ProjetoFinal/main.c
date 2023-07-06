@@ -8,13 +8,7 @@ void main (){
 
     get_dados(fila,"stdin.txt");
     init_clock_tick();
-    int c=0;
     int op=0;
-    for(int i=0;i<MAX_PROCESS;i++){
-        c+=fila[i].time_left;
-    }
-
-    printf("\n\nTempo necessario: %d\n",c);
 
     while((op!=1)&&(op!=2)){
         printf("\nSelecione o escalonador:\n");
@@ -29,7 +23,7 @@ void main (){
                 init_Buffer(&b,scheduler_SPN);
                 break;
             default:
-                printf("\nOpcao invalida\n.");
+                printf("\nOpcao invalida.\n");
                 break;
         }
     }
