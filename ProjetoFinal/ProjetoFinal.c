@@ -148,10 +148,6 @@ void get_dados(Process* queue){
     fclose(arq);
 }
 
-void main (){
-    return;
-}
-
 void kernel(Buffer* buffer, Process* queue){
     int i;
     ptrFunc foo = buffer->scheduler;
@@ -177,3 +173,9 @@ void kernel(Buffer* buffer, Process* queue){
             return;
     }
 }
+
+void main (){
+    return;
+}
+
+
