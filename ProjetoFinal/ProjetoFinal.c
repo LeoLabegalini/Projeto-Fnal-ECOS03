@@ -88,29 +88,30 @@ int remove_process(Buffer* buffer){
 
 // Escalonador Shortest Remaining-Time Next
 void scheduler_SRTN(Buffer* buffer){
-    if(buffer->current==buffer->final){
-        return;
-    }
-    //Processo acababou
-    if(buffer->processes[buffer->current].time_left==0){
-        buffer->current=(buffer->current+1) %9;
+    if(buffer->processes[buffer->current].time_left==0){ //Processo acababou
+        remove_process(buffer);
         clock.quantum_size=QUANTUM;
     }else{
-        //Quantum estourou
-        if(clock.quantum_size==0){
+        
+        if(clock.quantum_size==0){ //Quantum estourou
             int aux;
             aux = remove_process(buffer);
-            generic_scheduler(buffer);
-            add_process(buffer, buffer->processes[aux]);
+            if(aux>-1){
+                generic_scheduler(buffer);
+                add_process(buffer, buffer->processes[aux]);
+            }
+
         }
     }
 }
 
 // Escalonador Shortest Process Next
 void scheduler_SPN(Buffer* buffer){
-    //...
-    generic_scheduler(buffer);
-    //...
+    if(buffer->processes[buffer->current].time_left==0){
+        if(remove_process(buffer)>-1){
+            generic_scheduler(buffer);
+        } 
+    }
 }
 
 void init_Buffer(Buffer* buffer, ptrFunc type_scheduler){
@@ -154,11 +155,12 @@ void kernel(Buffer* buffer, Process* queue){
     //Adiciona processos no buffer
     while(1){
         for(i=0;i<MAX_PROCESS;i++){
-            if(queue[i].requested==clock.count)
+            if(queue[i].requested==clock.count){
                 add_process(buffer, queue[i]);
+            }
         }
 
-        foo(buffer);
+        foo(buffer); // Agendamento
         
         //Escreve processo atual
         //printi" t"=count "process" = buffer.current
