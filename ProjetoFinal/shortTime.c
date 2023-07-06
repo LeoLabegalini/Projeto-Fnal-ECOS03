@@ -125,42 +125,56 @@ void print_status(FILE* file, Buffer* buffer){
 
 }
 
-void kernel(Buffer* buffer, Process* queue, char* file_name){
-    int i;
-    int last_time = 0; // variavel de controle para adicao de processos ao buffer
-    int count_process = MAX_PROCESS; // variavel de controle para encerramento do looping de rotina
-    ptrFunc foo = buffer->scheduler;
-    FILE* arq;
-
-    arq = fopen(file_name,"w");
-    while(1){
-        //Adiciona processos no buffer se o mesmo não estiver cheio
-        for(i=0; i<MAX_PROCESS; i++){
-            if(queue[i].requested<=clock.count && queue[i].requested>=last_time){
-                if(add_process(buffer, queue[i])){
-                    count_process--;   
-                    queue[i].requested = -1;
-                    printf("%d\n", queue[i].id);
-                }else{
-                    last_time=queue[i].requested;
-                    i = MAX_PROCESS;
-                }
-                
+// Metodo de ordenacao Selection Sort para ordenar a fila
+void stSort(Process* queue){
+    int i, j, minIndex;
+    Process temp;
+    
+    for (i = 0; i < MAX_PROCESS - 1; i++) {
+        minIndex = i;
+        for (j = i + 1; j < MAX_PROCESS; j++) {
+            if (queue[j].requested < queue[minIndex].requested) {
+                minIndex = j;
             }
         }
+        if (minIndex != i) {
+            temp = queue[i];
+            queue[i] = queue[minIndex];
+            queue[minIndex] = temp;
+        }
+    }
+}
+
+void kernel(Buffer* buffer, Process* queue, char* file_name){
+    int i;
+    int last_process = 0; // variavel de controle para adicao de processos ao buffer
+    int count_process = MAX_PROCESS; // variavel de controle para encerramento do looping de rotina
+    ptrFunc foo = buffer->scheduler;
+    FILE* arq = fopen(file_name,"w");
+    
+    stSort(queue);
+
+    while(1){
+        i = last_process;
+        while(queue[i].requested <= clock.count && i<MAX_PROCESS){
+            if(!(add_process(buffer,queue[i])))
+                break;
+            count_process--;
+            i++;
+        }
+        last_process = i;
 
         foo(buffer); // Agendamento
         
         print_status(arq, buffer);
 
-        //Avança tempo
+        //Avanço do tempo
         clock.count++;
         buffer->processes[buffer->current].time_left--;
         clock.quantum_size--;
 
         //Finaliza Kernel
-        //if(count_process<=0 && buffer->current==buffer->last){
-        if(clock.count==70){
+        if( !(count_process) && buffer->current==buffer->last){
             printf("Processos que foram ao buffer: %d", MAX_PROCESS-count_process);
             fclose(arq);
             return;

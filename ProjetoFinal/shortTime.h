@@ -47,6 +47,7 @@
     void init_clock_tick();
     void get_dados(Process* queue, char* file_name);
     void print_status(FILE* file, Buffer* buffer);
+    void stSort(Process* queue);
     void kernel(Buffer* buffer, Process* queue, char* file_name);
 
 #endif //SHORT_TIME_SCHEDULER
