@@ -43,6 +43,8 @@ Clock_tick clock;
 
 typedef void (*ptrFunc)(Buffer*);
 
+// Como ambos os métodos de escalonamento, aqui presentes, utilizam como parametro o tempo restante, foi 
+// feito um escalonador generico para realizar o agendamento dos processos
 void generic_scheduler(Buffer* buffer){
     if(buffer->current==buffer->final){
         return;
@@ -90,27 +92,21 @@ int remove_process(Buffer* buffer){
 void scheduler_SRTN(Buffer* buffer){
     if(buffer->processes[buffer->current].time_left==0){ //Processo acababou
         remove_process(buffer);
+        generic_scheduler(buffer);
         clock.quantum_size=QUANTUM;
-    }else{
-        
-        if(clock.quantum_size==0){ //Quantum estourou
-            int aux;
-            aux = remove_process(buffer);
-            if(aux>-1){
-                generic_scheduler(buffer);
-                add_process(buffer, buffer->processes[aux]);
-            }
-
-        }
+    }else if(clock.quantum_size==0){ //Quantum estourou
+        int aux;
+        aux = remove_process(buffer);
+        if(aux>-1)
+            add_process(buffer, buffer->processes[aux]);
     }
 }
 
 // Escalonador Shortest Process Next
 void scheduler_SPN(Buffer* buffer){
     if(buffer->processes[buffer->current].time_left==0){
-        if(remove_process(buffer)>-1){
+        if(remove_process(buffer)>-1)
             generic_scheduler(buffer);
-        } 
     }
 }
 
