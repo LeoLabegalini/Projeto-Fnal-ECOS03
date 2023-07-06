@@ -3,7 +3,7 @@
 
 #define MAX_SIZE 10
 #define MAX_PROCESS 20
-#define QUANTUM 5
+#define QUANTUM 3
 
 /*Definicao do tipo processo:
  - tempo em que foi criado/requisitado
@@ -165,7 +165,7 @@ void print_status(FILE* file, Buffer* buffer){
 
 }
 
-// Metodo de ordenacao Selection Sort para ordenar a fila
+// Metodo de ordenacao (Selection Sort) que ordena pelo tempo de requisição
 void stSort(Process* queue){
     int i, j, minIndex;
     Process temp;
@@ -192,7 +192,9 @@ void kernel(Buffer* buffer, Process* queue, char* file_name){
     ptrFunc foo = buffer->scheduler;
     FILE* arq = fopen(file_name,"w");
     
-    stSort(queue);
+    // a fila deve estar ordenada para que os processos sejam adicionados ao
+    // buffer de maneira correta
+    stSort(queue); 
 
     while(1){
         i = last_process;
@@ -215,7 +217,7 @@ void kernel(Buffer* buffer, Process* queue, char* file_name){
 
         //Finaliza Kernel
         if( !(count_process) && buffer->current==buffer->last){
-            printf("Operacao finalizada! \nQuantidade de processos que foram ao buffer: %d", MAX_PROCESS-count_process);
+            printf("\nOperacao finalizada! \nQuantidade de processos que foram ao buffer: %d", MAX_PROCESS-count_process);
             fclose(arq);
             return;
         }
@@ -225,6 +227,13 @@ void kernel(Buffer* buffer, Process* queue, char* file_name){
 
 
 void main (){
+    Buffer b;
+    Process fila[MAX_PROCESS];
+
+    init_Buffer(&b,scheduler_SRTN);
+    get_dados(fila,"stdin.txt");
+    init_clock_tick();
+    kernel(&b,fila,"stdout.txt");
     return;
 }
 
