@@ -26,7 +26,7 @@
     typedef struct no{
         Process processes[MAX_SIZE];
         int current;
-        int final;
+        int last;
         void (*scheduler)(struct no*);
     }Buffer;
 
@@ -41,9 +41,6 @@
 
     typedef void (*ptrFunc)(Buffer*);
 
-    void generic_scheduler(Buffer* buffer);
-    // int add_process(Buffer* b, Process processo);
-    // int remove_process(Buffer* buffer);
     void scheduler_SRTN(Buffer* buffer);
     void scheduler_SPN(Buffer* buffer);
     void init_Buffer(Buffer* buffer, ptrFunc type_scheduler);

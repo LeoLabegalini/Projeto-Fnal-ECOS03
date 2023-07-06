@@ -7,7 +7,7 @@ Clock_tick clock;
 // Como ambos os métodos de escalonamento, aqui presentes, utilizam como parametro o tempo restante, foi 
 // feito um escalonador generico para realizar o agendamento dos processos
 void generic_scheduler(Buffer* buffer){
-    if(buffer->current==buffer->final){
+    if(buffer->current==buffer->last){
         return;
     }
 
@@ -15,7 +15,7 @@ void generic_scheduler(Buffer* buffer){
     int next = buffer->current;
     int i = (next+1)%MAX_SIZE;
 
-    while(i != buffer->final){
+    while(i != buffer->last){
         // em caso de impasse, é escolhido o de maior prioridade
         if((buffer->processes[i].time_left < buffer->processes[next].time_left)||
             ((buffer->processes[i].time_left == buffer->processes[next].time_left) &&
@@ -25,23 +25,23 @@ void generic_scheduler(Buffer* buffer){
         i = (i+1)%MAX_SIZE;
     }
 
-    aux=buffer->processes[(buffer->current+1)%9];
-    buffer->processes[(buffer->current+1)%9]=buffer->processes[next];
+    aux=buffer->processes[buffer->current];
+    buffer->processes[buffer->current]=buffer->processes[next];
     buffer->processes[next]=aux;
 }
 
-int add_process(Buffer* b, Process processo){
-    if((b->final+1) % MAX_SIZE != b->current){
+int add_process(Buffer* buffer, Process processo){
+    if((buffer->last+1) % MAX_SIZE == buffer->current){
         return 0;
     }
 
-    b->processes[b->final] = processo;
-    b->final = (b->final+1) % MAX_SIZE;
+    buffer->processes[buffer->last] = processo;
+    buffer->last = (buffer->last+1) % MAX_SIZE;
     return 1;
 }
 
 int remove_process(Buffer* buffer){
-    if(buffer->current==buffer->final){
+    if(buffer->current==buffer->last){
         return -1;
     }
 
@@ -59,8 +59,10 @@ void scheduler_SRTN(Buffer* buffer){
     }else if(clock.quantum_size==0){ //Quantum estourou
         int aux;
         aux = remove_process(buffer);
-        if(aux>-1)
+        if(aux>-1){
+            generic_scheduler(buffer);
             add_process(buffer, buffer->processes[aux]);
+        }
     }
 }
 
@@ -74,7 +76,7 @@ void scheduler_SPN(Buffer* buffer){
 
 void init_Buffer(Buffer* buffer, ptrFunc type_scheduler){
     buffer->current = 0;
-    buffer->final = 0;
+    buffer->last = 0;
     buffer->scheduler = type_scheduler;
 }
 
@@ -108,11 +110,15 @@ void get_dados(Process* queue, char* file_name){
 }
 
 void print_status(FILE* file, Buffer* buffer){
+    if(buffer->current==buffer->last){
+        return;
+    }
+
     fprintf(file,"\n================================================================================\n");
     fprintf(file,"Timing: %d \t Current process: P%d", clock.count, buffer->processes[buffer->current].id);
     fprintf(file,"\n-------------------------------------------------------------------------------\n");
     fprintf(file,"Waiting processes: ");
-    for(int i=(buffer->current+1)%MAX_SIZE;i!=buffer->final;i=(i+1)%MAX_SIZE){
+    for(int i=(buffer->current+1)%MAX_SIZE;i!=buffer->last;i=(i+1)%MAX_SIZE){
         fprintf(file,"P%d ", buffer->processes[i].id);
     }
     fprintf(file,"\n================================================================================\n");
@@ -122,20 +128,24 @@ void print_status(FILE* file, Buffer* buffer){
 void kernel(Buffer* buffer, Process* queue, char* file_name){
     int i;
     int last_time = 0; // variavel de controle para adicao de processos ao buffer
-    int count_process = 0; // variavel de controle para encerramento do looping de rotina
+    int count_process = MAX_PROCESS; // variavel de controle para encerramento do looping de rotina
     ptrFunc foo = buffer->scheduler;
     FILE* arq;
 
-    arq = fopen(file_name,"a");
-    
+    arq = fopen(file_name,"w");
     while(1){
         //Adiciona processos no buffer se o mesmo não estiver cheio
         for(i=0; i<MAX_PROCESS; i++){
             if(queue[i].requested<=clock.count && queue[i].requested>=last_time){
                 if(add_process(buffer, queue[i])){
-                    count_process++;
-                    last_time=clock.count;
+                    count_process--;   
+                    queue[i].requested = -1;
+                    printf("%d\n", queue[i].id);
+                }else{
+                    last_time=queue[i].requested;
+                    i = MAX_PROCESS;
                 }
+                
             }
         }
 
@@ -149,9 +159,12 @@ void kernel(Buffer* buffer, Process* queue, char* file_name){
         clock.quantum_size--;
 
         //Finaliza Kernel
-        if(count_process==MAX_PROCESS && buffer->current==buffer->final)
+        //if(count_process<=0 && buffer->current==buffer->last){
+        if(clock.count==70){
+            printf("Processos que foram ao buffer: %d", MAX_PROCESS-count_process);
             fclose(arq);
             return;
+        }
     }
     fclose(arq);
 }
