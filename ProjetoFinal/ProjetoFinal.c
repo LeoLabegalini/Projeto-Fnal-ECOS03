@@ -121,7 +121,7 @@ void init_clock_tick(){
     clock.quantum_size = QUANTUM;
 }
 
-// Retira os dados do arquivo de entrada stdin.txt salvando-os na fila  
+// Retira os dados de um arquivo salvando-os como processos em um vetor  
 void get_dados(Process* queue, char* file_name){
     FILE* arq;
     int request, time, priority, i;
@@ -147,7 +147,7 @@ void get_dados(Process* queue, char* file_name){
 
 void print_status(FILE* file, Buffer* buffer){
     fprintf(file,"\n================================================================================\n");
-    fprintf(file,"Timing: %d \t Current process: P%d\n", clock.count, buffer->processes[buffer->current].id);
+    fprintf(file,"Timing: %d \t Current process: P%d", clock.count, buffer->processes[buffer->current].id);
     fprintf(file,"\n-------------------------------------------------------------------------------\n");
     fprintf(file,"Waiting processes: ");
     for(int i=(buffer->current+1)%MAX_SIZE;i!=buffer->final;i=(i+1)%MAX_SIZE){
@@ -159,17 +159,21 @@ void print_status(FILE* file, Buffer* buffer){
 
 void kernel(Buffer* buffer, Process* queue, char* file_name){
     int i;
-    int count_process=0;
+    int last_time = 0; // variavel de controle para adicao de processos ao buffer
+    int count_process = 0; // variavel de controle para encerramento do looping de rotina
     ptrFunc foo = buffer->scheduler;
     FILE* arq;
 
     arq = fopen(file_name,"a");
-    //Adiciona processos no buffer
+    
     while(1){
-        for(i=0;i<MAX_PROCESS;i++){
-            if(queue[i].requested==clock.count){
-                add_process(buffer, queue[i]);
-                count_process++;
+        //Adiciona processos no buffer se o mesmo não estiver cheio
+        for(i=0; i<MAX_PROCESS; i++){
+            if(queue[i].requested<=clock.count && queue[i].requested>=last_time){
+                if(add_process(buffer, queue[i])){
+                    count_process++;
+                    last_time=clock.count;
+                }
             }
         }
 
